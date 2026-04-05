@@ -12,6 +12,7 @@
       padding: 0;
       height: 100%;
     }
+
     #map {
       width: 100%;
       height: 100vh;
@@ -23,23 +24,20 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Khởi tạo bản đồ
     var map = L.map('map').setView([21.0285, 105.8542], 12);
 
-    // Nền bản đồ OSM
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Đọc file GeoJSON từ thư mục data
-    fetch('data/svd.geojson')
-      .then(response => {
+    fetch('./data/svd.geojson')
+      .then(function(response) {
         if (!response.ok) {
-          throw new Error('Không đọc được file GeoJSON');
+          throw new Error('Không đọc được file GeoJSON: ' + response.status);
         }
         return response.json();
       })
-      .then(data => {
+      .then(function(data) {
         var geojsonLayer = L.geoJSON(data, {
           style: function(feature) {
             return {
@@ -51,8 +49,8 @@
           },
           onEachFeature: function(feature, layer) {
             if (feature.properties) {
-              let popupContent = '';
-              for (let key in feature.properties) {
+              var popupContent = '';
+              for (var key in feature.properties) {
                 popupContent += '<b>' + key + ':</b> ' + feature.properties[key] + '<br>';
               }
               layer.bindPopup(popupContent);
@@ -60,12 +58,13 @@
           }
         }).addTo(map);
 
-        // Zoom tới lớp dữ liệu
-        map.fitBounds(geojsonLayer.getBounds());
+        if (geojsonLayer.getBounds().isValid()) {
+          map.fitBounds(geojsonLayer.getBounds());
+        }
       })
-      .catch(error => {
+      .catch(function(error) {
         console.error('Lỗi:', error);
-        alert('Không tải được lớp GeoJSON. Kiểm tra lại đường dẫn file.');
+        alert('Không tải được lớp GeoJSON. Kiểm tra tên file, thư mục data, và đường dẫn.');
       });
   </script>
 </body>
